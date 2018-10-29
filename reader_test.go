@@ -32,7 +32,7 @@ func TestSimpleReader(t *testing.T) {
 		t.Error(err)
 	}
 
-	erow := []CSVJValue{"Row1", "Row2", "Row3"}
+	erow := []interface{}{"Row1", "Row2", "Row3"}
 	if !reflect.DeepEqual(row, erow) {
 		t.Error("Bad Row", row, "expected", erow)
 	}
@@ -63,7 +63,7 @@ func TestSimpleReaderNoNewline(t *testing.T) {
 		t.Error(err)
 	}
 
-	erow := []CSVJValue{42.0, 42.0, false}
+	erow := []interface{}{42.0, 42.0, false}
 
 	if !reflect.DeepEqual(row, erow) {
 		t.Error("Bad Row", row, "expected", erow, "reason")
@@ -87,7 +87,7 @@ func TestReaderEmptyLineInMiddle(t *testing.T) {
 		t.Error(err)
 	}
 
-	if !reflect.DeepEqual(row, []CSVJValue{}) {
+	if !reflect.DeepEqual(row, []interface{}{}) {
 		t.Error("Bad Row", row, "expected empty array")
 	}
 
@@ -96,7 +96,7 @@ func TestReaderEmptyLineInMiddle(t *testing.T) {
 		t.Error(err)
 	}
 
-	erow := []CSVJValue{nil, nil, true}
+	erow := []interface{}{nil, nil, true}
 
 	if !reflect.DeepEqual(row, erow) {
 		t.Error("Bad Row", row, "expected", erow, "reason")

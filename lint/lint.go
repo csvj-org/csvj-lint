@@ -60,7 +60,7 @@ func Do(reader *gocsvj.Reader) []Message {
 	return lintLog
 }
 
-func checkRowTypes(lintLog []Message, rown int, row1 []gocsvj.CSVJValue, row []gocsvj.CSVJValue) []Message {
+func checkRowTypes(lintLog []Message, rown int, row1 []interface{}, row []interface{}) []Message {
 	for i, item := range row1 {
 		if i >= len(row) {
 			lintLog = aplog(lintLog, Warning, "row ", rown,
@@ -80,7 +80,7 @@ func checkRowTypes(lintLog []Message, rown int, row1 []gocsvj.CSVJValue, row []g
 	return lintLog
 }
 
-func checkRowHeader(lintLog []Message, rown int, headers []string, row []gocsvj.CSVJValue) []Message {
+func checkRowHeader(lintLog []Message, rown int, headers []string, row []interface{}) []Message {
 	lenh := len(headers)
 	lenr := len(row)
 	if lenh != lenr {

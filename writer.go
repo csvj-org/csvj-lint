@@ -10,10 +10,6 @@ import (
 )
 
 // A Writer writes records to a CSVJ encoded file.
-//
-// As returned by NewWriter, a Writer writes CSVJ records
-//
-
 type Writer struct {
 	StrictHeaders bool
 
@@ -29,7 +25,8 @@ func NewWriter(w io.Writer) *Writer {
 	}
 }
 
-func (w *Writer) WriterHeader(header []string) error {
+// WriteHeader writes first CSVJ header-record
+func (w *Writer) WriteHeader(header []string) error {
 	w.hlen = len(header)
 	return w.writeRaw(header)
 }
@@ -86,10 +83,6 @@ func (w *Writer) Error() error {
 	return err
 }
 
-func csvjWritableError(index int, kind reflect.Kind) error {
-	return errors.New(fmt.Sprintf("item %d is not CSVJ type-safe: %v", index, kind))
-}
-
 func checkCSVJWritable(ar interface{}) error {
 
 	val := reflect.ValueOf(ar)
@@ -111,7 +104,7 @@ func checkCSVJWritable(ar interface{}) error {
 		switch kind {
 		case reflect.Ptr, reflect.Interface, reflect.Slice,
 			reflect.Struct, reflect.Map, reflect.Array:
-			return csvjWritableError(idx, kind)
+			return fmt.Errorf("item %d is not CSVJ type-safe: %v", idx, kind)
 		}
 	}
 

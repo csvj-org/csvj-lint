@@ -16,15 +16,14 @@ import (
 	"strings"
 )
 
-type CSVJValue interface{}
-
+// A Reader reads records from a CSVJ-encoded file.
 type Reader struct {
 	line       int
 	headerRead bool
 	header     []string
 	r          *bufio.Scanner
 	clSet      bool
-	clValues   []CSVJValue
+	clValues   []interface{}
 	clError    error
 }
 
@@ -35,7 +34,7 @@ func NewReader(r io.Reader) *Reader {
 	}
 }
 
-// Reads header record from r and caches it
+// Headers reads header record from r and caches it
 // so it could be returned later too
 func (r *Reader) Headers() ([]string, error) {
 	if r.headerRead {
@@ -59,14 +58,14 @@ func (r *Reader) Headers() ([]string, error) {
 }
 
 // // Read reads one record (a slice of fields) from r
-func (r *Reader) Read() ([]CSVJValue, error) {
+func (r *Reader) Read() ([]interface{}, error) {
 	if r.headerRead == false {
 		r.Headers()
 	}
 	return r.readLine()
 }
 
-func valuesAsStrings(vs []CSVJValue) ([]string, error) {
+func valuesAsStrings(vs []interface{}) ([]string, error) {
 	strs := make([]string, len(vs))
 
 	for i, v := range vs {
@@ -79,7 +78,7 @@ func valuesAsStrings(vs []CSVJValue) ([]string, error) {
 	return strs, nil
 }
 
-func (r *Reader) readLine() ([]CSVJValue, error) {
+func (r *Reader) readLine() ([]interface{}, error) {
 	r.line++
 
 	if r.clSet {
@@ -109,23 +108,23 @@ func (r *Reader) readLine() ([]CSVJValue, error) {
 	}
 	line := "[" + sl + "]"
 
-	var lv []CSVJValue
+	var lv []interface{}
 	err := json.Unmarshal([]byte(line), &lv)
 	if err != nil {
-		err = errors.New(fmt.Sprint("parse error row ", r.line, ": ", err.Error()))
+		err = fmt.Errorf("parse error row %d : %s", r.line, err.Error())
 		return nil, err
 	}
 
 	typesafe, erritem := checkCSVJTypes(lv)
 
 	if !typesafe {
-		return nil, errors.New(fmt.Sprintf("row %d parse error at item %d", r.line, erritem))
+		return nil, fmt.Errorf("row %d parse error at item %d", r.line, erritem)
 	}
 
 	return lv, nil
 }
 
-func checkCSVJTypes(ar []CSVJValue) (bool, int) {
+func checkCSVJTypes(ar []interface{}) (bool, int) {
 
 	for idx, el := range ar {
 		if el == nil {
