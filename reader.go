@@ -1,3 +1,10 @@
+// Copyright CSVJ.org. All rights reserved.
+// Use of this source code is governed by
+// MIT license that can be found in the LICENSE file.
+
+// Package github.com/csvj-org/gocsvj reads and writes comma-separated values files of CSVJ type.
+// CSVJ is a csv-like format for storing tables that follows certain JSON encoding rules.
+
 package gocsvj
 
 import (
@@ -21,12 +28,15 @@ type Reader struct {
 	clError    error
 }
 
+// NewReader returns a new Reader that reads from r.
 func NewReader(r io.Reader) *Reader {
 	return &Reader{
 		r: bufio.NewScanner(r),
 	}
 }
 
+// Reads header record from r and caches it
+// so it could be returned later too
 func (r *Reader) Headers() ([]string, error) {
 	if r.headerRead {
 		return r.header, nil
@@ -48,6 +58,7 @@ func (r *Reader) Headers() ([]string, error) {
 	return r.header, nil
 }
 
+// // Read reads one record (a slice of fields) from r
 func (r *Reader) Read() ([]CSVJValue, error) {
 	if r.headerRead == false {
 		r.Headers()
@@ -105,7 +116,18 @@ func (r *Reader) readLine() ([]CSVJValue, error) {
 		return nil, err
 	}
 
-	for idx, el := range lv {
+	typesafe, erritem := checkCSVJTypes(lv)
+
+	if !typesafe {
+		return nil, errors.New(fmt.Sprintf("row %d parse error at item %d", r.line, erritem))
+	}
+
+	return lv, nil
+}
+
+func checkCSVJTypes(ar []CSVJValue) (bool, int) {
+
+	for idx, el := range ar {
 		if el == nil {
 			continue
 		}
@@ -117,9 +139,9 @@ func (r *Reader) readLine() ([]CSVJValue, error) {
 			continue
 
 		default:
-			return nil, errors.New(fmt.Sprintf("row %d parse error at item %d", r.line, idx))
+			return false, idx
 		}
 	}
 
-	return lv, nil
+	return true, -1
 }
