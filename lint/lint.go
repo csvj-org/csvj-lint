@@ -1,3 +1,8 @@
+// Copyright CSVJ.org. All rights reserved.
+// Use of this source code is governed by
+// MIT license that can be found in the LICENSE file.
+
+// Package lint verifies CSVJ file to be good, gives some warnings too
 package lint
 
 import (
@@ -7,11 +12,13 @@ import (
 	"reflect"
 )
 
+// Message is a minimal element of lint result
 type Message struct {
-	Level   string
-	Message string
+	Level   string // Level - either Info, Warning or Error
+	Message string // Message - human readable string messages
 }
 
+// Info, Warning, Error - different message levels
 const (
 	Info    = "Info"
 	Warning = "Warning"
@@ -23,6 +30,7 @@ func aplog(ll []Message, l string, m ...interface{}) []Message {
 	return ll
 }
 
+// Do actually does CSVJ lint
 func Do(reader *gocsvj.Reader) []Message {
 
 	var lintLog []Message
@@ -60,7 +68,7 @@ func Do(reader *gocsvj.Reader) []Message {
 	return lintLog
 }
 
-func checkRowTypes(lintLog []Message, rown int, row1 []gocsvj.CSVJValue, row []gocsvj.CSVJValue) []Message {
+func checkRowTypes(lintLog []Message, rown int, row1 []interface{}, row []interface{}) []Message {
 	for i, item := range row1 {
 		if i >= len(row) {
 			lintLog = aplog(lintLog, Warning, "row ", rown,
@@ -80,7 +88,7 @@ func checkRowTypes(lintLog []Message, rown int, row1 []gocsvj.CSVJValue, row []g
 	return lintLog
 }
 
-func checkRowHeader(lintLog []Message, rown int, headers []string, row []gocsvj.CSVJValue) []Message {
+func checkRowHeader(lintLog []Message, rown int, headers []string, row []interface{}) []Message {
 	lenh := len(headers)
 	lenr := len(row)
 	if lenh != lenr {

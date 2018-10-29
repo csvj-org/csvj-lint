@@ -8,7 +8,7 @@ import (
 	"testing/iotest"
 )
 
-func TestSimple(t *testing.T) {
+func TestSimpleReader(t *testing.T) {
 	csvj := `"Header1", "Header2", "Header3"` + "\n"
 	csvj += `"Row1", "Row2", "Row3"` + "\n"
 	csvj += " " // empty last line, just in case
@@ -32,7 +32,7 @@ func TestSimple(t *testing.T) {
 		t.Error(err)
 	}
 
-	erow := []CSVJValue{"Row1", "Row2", "Row3"}
+	erow := []interface{}{"Row1", "Row2", "Row3"}
 	if !reflect.DeepEqual(row, erow) {
 		t.Error("Bad Row", row, "expected", erow)
 	}
@@ -43,7 +43,7 @@ func TestSimple(t *testing.T) {
 	}
 }
 
-func TestSimpleNoNewline(t *testing.T) {
+func TestSimpleReaderNoNewline(t *testing.T) {
 	csvj := `"Header1", "Header2", "Header3"` + "\n"
 	csvj += `42, 42, false`
 
@@ -63,7 +63,7 @@ func TestSimpleNoNewline(t *testing.T) {
 		t.Error(err)
 	}
 
-	erow := []CSVJValue{42.0, 42.0, false}
+	erow := []interface{}{42.0, 42.0, false}
 
 	if !reflect.DeepEqual(row, erow) {
 		t.Error("Bad Row", row, "expected", erow, "reason")
@@ -75,7 +75,7 @@ func TestSimpleNoNewline(t *testing.T) {
 	}
 }
 
-func TestEmptyLineInMiddle(t *testing.T) {
+func TestReaderEmptyLineInMiddle(t *testing.T) {
 	csvj := `"Header1", "Header2", "Header3"` + "\n"
 	csvj += "\n"
 	csvj += `null, null, true`
@@ -87,7 +87,7 @@ func TestEmptyLineInMiddle(t *testing.T) {
 		t.Error(err)
 	}
 
-	if !reflect.DeepEqual(row, []CSVJValue{}) {
+	if !reflect.DeepEqual(row, []interface{}{}) {
 		t.Error("Bad Row", row, "expected empty array")
 	}
 
@@ -96,7 +96,7 @@ func TestEmptyLineInMiddle(t *testing.T) {
 		t.Error(err)
 	}
 
-	erow := []CSVJValue{nil, nil, true}
+	erow := []interface{}{nil, nil, true}
 
 	if !reflect.DeepEqual(row, erow) {
 		t.Error("Bad Row", row, "expected", erow, "reason")
@@ -108,7 +108,7 @@ func TestEmptyLineInMiddle(t *testing.T) {
 	}
 }
 
-func TestParseError(t *testing.T) {
+func TestReaderParseError(t *testing.T) {
 	csvj := `"Header1", "Header2", "Header3"` + "\n"
 	csvj += `42, $, false`
 
@@ -125,7 +125,7 @@ func TestParseError(t *testing.T) {
 	}
 }
 
-func TestParseJSLikeError(t *testing.T) {
+func TestReaderParseJSLikeError(t *testing.T) {
 	csvj := `"Header1", "Header2", "Header3"` + "\n"
 	csvj += `42, [], false`
 
@@ -142,7 +142,7 @@ func TestParseJSLikeError(t *testing.T) {
 	}
 }
 
-func TestHeaderError(t *testing.T) {
+func TestReaderHeaderError(t *testing.T) {
 	csvj := `"Header1", 1, "Header2", "Header3"` + "\n"
 
 	r := NewReader(strings.NewReader(csvj))
@@ -153,7 +153,7 @@ func TestHeaderError(t *testing.T) {
 	}
 }
 
-func TestReadError(t *testing.T) {
+func TestReaderReadError(t *testing.T) {
 	csvj := `"Header1", "Header2", "Header3"` + "\n"
 	csvj += `42, 1, false`
 
@@ -165,7 +165,7 @@ func TestReadError(t *testing.T) {
 	}
 }
 
-func TestEmptyError(t *testing.T) {
+func TestReaderEmptyError(t *testing.T) {
 	csvj := ""
 
 	r := NewReader(strings.NewReader(csvj))

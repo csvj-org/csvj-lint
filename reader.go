@@ -1,3 +1,10 @@
+// Copyright CSVJ.org. All rights reserved.
+// Use of this source code is governed by
+// MIT license that can be found in the LICENSE file.
+
+// Package github.com/csvj-org/gocsvj reads and writes comma-separated values files of CSVJ type.
+// CSVJ is a csv-like format for storing tables that follows certain JSON encoding rules.
+
 package gocsvj
 
 import (
@@ -9,24 +16,26 @@ import (
 	"strings"
 )
 
-type CSVJValue interface{}
-
+// A Reader reads records from a CSVJ-encoded file.
 type Reader struct {
 	line       int
 	headerRead bool
 	header     []string
 	r          *bufio.Scanner
 	clSet      bool
-	clValues   []CSVJValue
+	clValues   []interface{}
 	clError    error
 }
 
+// NewReader returns a new Reader that reads from r.
 func NewReader(r io.Reader) *Reader {
 	return &Reader{
 		r: bufio.NewScanner(r),
 	}
 }
 
+// Headers reads header record from r and caches it
+// so it could be returned later too
 func (r *Reader) Headers() ([]string, error) {
 	if r.headerRead {
 		return r.header, nil
@@ -48,14 +57,15 @@ func (r *Reader) Headers() ([]string, error) {
 	return r.header, nil
 }
 
-func (r *Reader) Read() ([]CSVJValue, error) {
+// // Read reads one record (a slice of fields) from r
+func (r *Reader) Read() ([]interface{}, error) {
 	if r.headerRead == false {
 		r.Headers()
 	}
 	return r.readLine()
 }
 
-func valuesAsStrings(vs []CSVJValue) ([]string, error) {
+func valuesAsStrings(vs []interface{}) ([]string, error) {
 	strs := make([]string, len(vs))
 
 	for i, v := range vs {
@@ -68,7 +78,22 @@ func valuesAsStrings(vs []CSVJValue) ([]string, error) {
 	return strs, nil
 }
 
-func (r *Reader) readLine() ([]CSVJValue, error) {
+func (r *Reader) scanLine() error {
+	if !r.r.Scan() {
+		err := r.r.Err()
+		if err == nil {
+			return io.EOF
+		}
+		return err
+	}
+
+	if err := r.r.Err(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *Reader) readLine() ([]interface{}, error) {
 	r.line++
 
 	if r.clSet {
@@ -76,15 +101,9 @@ func (r *Reader) readLine() ([]CSVJValue, error) {
 		return r.clValues, r.clError
 	}
 
-	if !r.r.Scan() {
-		err := r.r.Err()
-		if err == nil {
-			return nil, io.EOF
-		}
-		return nil, err
-	}
+	err := r.scanLine()
 
-	if err := r.r.Err(); err != nil {
+	if err != nil {
 		return nil, err
 	}
 
@@ -98,14 +117,25 @@ func (r *Reader) readLine() ([]CSVJValue, error) {
 	}
 	line := "[" + sl + "]"
 
-	var lv []CSVJValue
-	err := json.Unmarshal([]byte(line), &lv)
+	var lv []interface{}
+	err = json.Unmarshal([]byte(line), &lv)
 	if err != nil {
-		err = errors.New(fmt.Sprint("parse error row ", r.line, ": ", err.Error()))
+		err = fmt.Errorf("parse error row %d : %s", r.line, err.Error())
 		return nil, err
 	}
 
-	for idx, el := range lv {
+	typesafe, erritem := checkCSVJTypes(lv)
+
+	if !typesafe {
+		return nil, fmt.Errorf("row %d parse error at item %d", r.line, erritem)
+	}
+
+	return lv, nil
+}
+
+func checkCSVJTypes(ar []interface{}) (bool, int) {
+
+	for idx, el := range ar {
 		if el == nil {
 			continue
 		}
@@ -117,9 +147,9 @@ func (r *Reader) readLine() ([]CSVJValue, error) {
 			continue
 
 		default:
-			return nil, errors.New(fmt.Sprintf("row %d parse error at item %d", r.line, idx))
+			return false, idx
 		}
 	}
 
-	return lv, nil
+	return true, -1
 }
