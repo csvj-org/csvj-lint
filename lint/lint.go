@@ -3,7 +3,6 @@
 // MIT license that can be found in the LICENSE file.
 
 // Package lint verifies CSVJ file to be good, gives some warnings too
-
 package lint
 
 import (
@@ -19,10 +18,11 @@ type Message struct {
 	Message string  // Message - human readable string messages
 }
 
+// Info, Warning, Error - different message levels
 const (
-	Info    = "Info"		// Info just FYI
-	Warning = "Warning"		// Warning - it's bad, but not fatal
-	Error   = "Error"		// Error - is a parse or syntax error
+	Info    = "Info"
+	Warning = "Warning"
+	Error   = "Error"
 )
 
 func aplog(ll []Message, l string, m ...interface{}) []Message {
@@ -30,7 +30,7 @@ func aplog(ll []Message, l string, m ...interface{}) []Message {
 	return ll
 }
 
-// Do actually does CSVJ lint 
+// Do actually does CSVJ lint
 func Do(reader *gocsvj.Reader) []Message {
 
 	var lintLog []Message
