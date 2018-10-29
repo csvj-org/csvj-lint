@@ -9,7 +9,7 @@ func TestSimpleWriter(t *testing.T) {
 	var sw strings.Builder
 
 	w := NewWriter(&sw)
-	w.WriterHeader([]string{"h1", "h2", "h3"})
+	w.WriteHeader([]string{"h1", "h2", "h3"})
 	err := w.Write([]int{2, 4, 5})
 
 	if err != nil {
@@ -32,7 +32,7 @@ func TestInterface(t *testing.T) {
 	var sw strings.Builder
 
 	w := NewWriter(&sw)
-	w.WriterHeader([]string{"h1", "h2", "h3"})
+	w.WriteHeader([]string{"h1", "h2", "h3"})
 	err := w.Write([]interface{}{"test", nil, 42})
 
 	if err != nil {
@@ -54,7 +54,7 @@ func TestInterface(t *testing.T) {
 func TestWriterNonSlice(t *testing.T) {
 	var sw strings.Builder
 	w := NewWriter(&sw)
-	w.WriterHeader([]string{"h1"})
+	w.WriteHeader([]string{"h1"})
 	err := w.Write(42)
 
 	if err == nil {
@@ -65,7 +65,7 @@ func TestWriterNonSlice(t *testing.T) {
 func TestWriterBadHeader(t *testing.T) {
 	var sw strings.Builder
 	w := NewWriter(&sw)
-	w.WriterHeader([]string{""})
+	w.WriteHeader([]string{""})
 	err := w.Write([]string{"item", "item2"})
 
 	if err == nil {
@@ -77,7 +77,7 @@ func TestWriteNonCSVJ(t *testing.T) {
 	var sw strings.Builder
 	w := NewWriter(&sw)
 
-	w.WriterHeader([]string{"h1", "h2", "h3"})
+	w.WriteHeader([]string{"h1", "h2", "h3"})
 
 	mp := make(map[string]string)
 	mp["test"] = "test"
