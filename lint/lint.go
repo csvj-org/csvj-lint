@@ -1,3 +1,9 @@
+// Copyright CSVJ.org. All rights reserved.
+// Use of this source code is governed by
+// MIT license that can be found in the LICENSE file.
+
+// Package lint verifies CSVJ file to be good, gives some warnings too
+
 package lint
 
 import (
@@ -7,15 +13,16 @@ import (
 	"reflect"
 )
 
+// Message is a minimal element of lint result
 type Message struct {
-	Level   string
-	Message string
+	Level   string 	// Level - either Info, Warning or Error
+	Message string  // Message - human readable string messages
 }
 
 const (
-	Info    = "Info"
-	Warning = "Warning"
-	Error   = "Error"
+	Info    = "Info"		// Info just FYI
+	Warning = "Warning"		// Warning - it's bad, but not fatal
+	Error   = "Error"		// Error - is a parse or syntax error
 )
 
 func aplog(ll []Message, l string, m ...interface{}) []Message {
@@ -23,6 +30,7 @@ func aplog(ll []Message, l string, m ...interface{}) []Message {
 	return ll
 }
 
+// Do actually does CSVJ lint 
 func Do(reader *gocsvj.Reader) []Message {
 
 	var lintLog []Message
