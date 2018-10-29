@@ -78,6 +78,21 @@ func valuesAsStrings(vs []interface{}) ([]string, error) {
 	return strs, nil
 }
 
+func (r *Reader) scanLine() error {
+	if !r.r.Scan() {
+		err := r.r.Err()
+		if err == nil {
+			return io.EOF
+		}
+		return err
+	}
+
+	if err := r.r.Err(); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r *Reader) readLine() ([]interface{}, error) {
 	r.line++
 
@@ -86,15 +101,9 @@ func (r *Reader) readLine() ([]interface{}, error) {
 		return r.clValues, r.clError
 	}
 
-	if !r.r.Scan() {
-		err := r.r.Err()
-		if err == nil {
-			return nil, io.EOF
-		}
-		return nil, err
-	}
+	err := r.scanLine()
 
-	if err := r.r.Err(); err != nil {
+	if err != nil {
 		return nil, err
 	}
 
@@ -109,7 +118,7 @@ func (r *Reader) readLine() ([]interface{}, error) {
 	line := "[" + sl + "]"
 
 	var lv []interface{}
-	err := json.Unmarshal([]byte(line), &lv)
+	err = json.Unmarshal([]byte(line), &lv)
 	if err != nil {
 		err = fmt.Errorf("parse error row %d : %s", r.line, err.Error())
 		return nil, err

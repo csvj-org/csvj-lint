@@ -14,8 +14,8 @@ import (
 
 // Message is a minimal element of lint result
 type Message struct {
-	Level   string 	// Level - either Info, Warning or Error
-	Message string  // Message - human readable string messages
+	Level   string // Level - either Info, Warning or Error
+	Message string // Message - human readable string messages
 }
 
 // Info, Warning, Error - different message levels
